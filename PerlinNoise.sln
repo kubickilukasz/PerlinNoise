@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.1082
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PerlinNoise", "PerlinNoise\PerlinNoise.vcxproj", "{44D0CA1D-AD33-4C35-8028-115D104BC34D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F35EEC75-50B8-4042-8B29-688F2C63956C} = {F35EEC75-50B8-4042-8B29-688F2C63956C}
+		{F2A1DAD4-6F47-4DA1-BB6D-83365039F724} = {F2A1DAD4-6F47-4DA1-BB6D-83365039F724}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "perlinNoiseCDll", "perlinNoiseCDll\perlinNoiseCDll.vcxproj", "{F35EEC75-50B8-4042-8B29-688F2C63956C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "perlinNoiseAsmDLL", "perlinNoiseAsmDLL\perlinNoiseAsmDLL.vcxproj", "{F2A1DAD4-6F47-4DA1-BB6D-83365039F724}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{44D0CA1D-AD33-4C35-8028-115D104BC34D}.Debug|x64.ActiveCfg = Debug|x64
+		{44D0CA1D-AD33-4C35-8028-115D104BC34D}.Debug|x64.Build.0 = Debug|x64
+		{44D0CA1D-AD33-4C35-8028-115D104BC34D}.Debug|x86.ActiveCfg = Debug|Win32
+		{44D0CA1D-AD33-4C35-8028-115D104BC34D}.Debug|x86.Build.0 = Debug|Win32
+		{44D0CA1D-AD33-4C35-8028-115D104BC34D}.Release|x64.ActiveCfg = Release|x64
+		{44D0CA1D-AD33-4C35-8028-115D104BC34D}.Release|x64.Build.0 = Release|x64
+		{44D0CA1D-AD33-4C35-8028-115D104BC34D}.Release|x86.ActiveCfg = Release|Win32
+		{44D0CA1D-AD33-4C35-8028-115D104BC34D}.Release|x86.Build.0 = Release|Win32
+		{F35EEC75-50B8-4042-8B29-688F2C63956C}.Debug|x64.ActiveCfg = Debug|x64
+		{F35EEC75-50B8-4042-8B29-688F2C63956C}.Debug|x64.Build.0 = Debug|x64
+		{F35EEC75-50B8-4042-8B29-688F2C63956C}.Debug|x86.ActiveCfg = Debug|Win32
+		{F35EEC75-50B8-4042-8B29-688F2C63956C}.Debug|x86.Build.0 = Debug|Win32
+		{F35EEC75-50B8-4042-8B29-688F2C63956C}.Release|x64.ActiveCfg = Release|x64
+		{F35EEC75-50B8-4042-8B29-688F2C63956C}.Release|x64.Build.0 = Release|x64
+		{F35EEC75-50B8-4042-8B29-688F2C63956C}.Release|x86.ActiveCfg = Release|Win32
+		{F35EEC75-50B8-4042-8B29-688F2C63956C}.Release|x86.Build.0 = Release|Win32
+		{F2A1DAD4-6F47-4DA1-BB6D-83365039F724}.Debug|x64.ActiveCfg = Debug|x64
+		{F2A1DAD4-6F47-4DA1-BB6D-83365039F724}.Debug|x64.Build.0 = Debug|x64
+		{F2A1DAD4-6F47-4DA1-BB6D-83365039F724}.Debug|x86.ActiveCfg = Debug|Win32
+		{F2A1DAD4-6F47-4DA1-BB6D-83365039F724}.Debug|x86.Build.0 = Debug|Win32
+		{F2A1DAD4-6F47-4DA1-BB6D-83365039F724}.Release|x64.ActiveCfg = Release|x64
+		{F2A1DAD4-6F47-4DA1-BB6D-83365039F724}.Release|x64.Build.0 = Release|x64
+		{F2A1DAD4-6F47-4DA1-BB6D-83365039F724}.Release|x86.ActiveCfg = Release|Win32
+		{F2A1DAD4-6F47-4DA1-BB6D-83365039F724}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C45AABA0-EC5C-4ED8-A055-B9BC2EF541D9}
+	EndGlobalSection
+EndGlobal

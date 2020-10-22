@@ -1,0 +1,3 @@
+LIBRARY perlinNoiseCDll
+EXPORTS
+   geggtFive @1
