@@ -12,6 +12,7 @@ public ref class SingleThread {
 	unsigned char * data;
 
 	int offset;
+	int partHeight;
 
 	DLLFUNCTION Func;
 
@@ -19,7 +20,7 @@ public:
 
 	Thread ^ thread;
 
-	SingleThread(InputData ^ in, unsigned char * d, int o, DLLFUNCTION f) : inData(in), data(d), offset(o), Func(f) {
+	SingleThread(InputData ^ in, unsigned char * d, int o, int p, DLLFUNCTION f) : inData(in), data(d), offset(o), partHeight(p), Func(f) {
 		thread = gcnew Thread(gcnew ParameterizedThreadStart(this, &SingleThread::ThreadFunction));
 	}
 
@@ -27,7 +28,7 @@ public:
 
 		int param[]{
 					inData->width
-					,inData->height
+					,partHeight
 					,BYTES_PER_PIXEL
 					,offset
 					,inData->levels
@@ -39,8 +40,6 @@ public:
 		};
 
 		Func(data, param, fParam);
-
-		System::Console::WriteLine(thread->Name);
 	}
 
 };

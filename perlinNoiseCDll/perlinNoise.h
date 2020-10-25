@@ -7,6 +7,8 @@
 #define DLL_PERLIN_NOISE_C __declspec(dllimport)
 #endif
 
-DLL_PERLIN_NOISE_C unsigned PERLIN_NOISE(unsigned char*, int *);
+DLL_PERLIN_NOISE_C unsigned PERLIN_NOISE(unsigned char*, int *, float * fParam);
+
+DLL_PERLIN_NOISE_C void SET_SEED(int);
 
 //extern "C"

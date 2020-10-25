@@ -20,6 +20,7 @@ public ref class Generator{
 	HINSTANCE hInstLibrary;
 
 	DLLFUNCTION Func;
+	SET_SEED setSeed;
 
 	//BMP bmpFile;
 
@@ -31,7 +32,8 @@ public ref class Generator{
 	bool GetLibFunction() {
 		if (hInstLibrary) {
 			Func = (DLLFUNCTION)GetProcAddress(hInstLibrary, "PERLIN_NOISE");
-			if (Func) {
+			setSeed = (SET_SEED)GetProcAddress(hInstLibrary, "SET_SEED");
+			if (Func && setSeed) {
 				return true;
 			}
 			else {
@@ -58,23 +60,31 @@ public:
 	void Generate() {
 		if (GetLibFunction()) {
 			//do this
+
+			setSeed(inputData->seed);
+
 			int heightSingleThread = (int)(inputData->height / inputData->numberOfThreads);
-			int restPixels = inputData->height;
-			while (restPixels >= heightSingleThread) {
-				restPixels -= heightSingleThread;
-			}
+			int restPixels = inputData->height - (inputData->numberOfThreads * heightSingleThread);
+
+			System::Console::WriteLine(inputData->persistence);
 
 			std::vector<unsigned char> image;
 			image.resize(inputData->height * inputData->width * BYTES_PER_PIXEL);
 
 			array<SingleThread^> ^ threads = gcnew array<SingleThread^>(inputData->numberOfThreads);
 			int currentOffset = 0;
-			for (int i = 0; i < inputData->numberOfThreads; i++) {
-				if (i + 1 == inputData->numberOfThreads) heightSingleThread += restPixels;
-				threads[i] = gcnew SingleThread(inputData,image.data(), currentOffset, Func);
-				threads[i]->thread->Name = i.ToString();
+
+			heightSingleThread++;
+			for (int i = 0; i < restPixels; i++) {
+				threads[i] = gcnew SingleThread(inputData, image.data(), currentOffset, heightSingleThread, Func);
 				threads[i]->thread->Priority = ThreadPriority::AboveNormal;
-				//threads[i]->thread->Start();
+				currentOffset += heightSingleThread;
+			}
+
+			heightSingleThread--;
+			for (int i = restPixels; i < inputData->numberOfThreads; i++) {
+				threads[i] = gcnew SingleThread(inputData, image.data(), currentOffset, heightSingleThread, Func);
+				threads[i]->thread->Priority = ThreadPriority::AboveNormal;
 				currentOffset += heightSingleThread;
 			}
 

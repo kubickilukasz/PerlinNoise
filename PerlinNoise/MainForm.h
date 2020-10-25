@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include "DataStructures.h"
+#include <random>
 #include "Generator.h"
 #include <chrono> 
 
@@ -56,6 +57,9 @@ namespace PerlinNoise {
 	private: System::Windows::Forms::Label^  timeLabel;
 	private: System::Windows::Forms::Label^  label7;
 	private: System::Windows::Forms::NumericUpDown^  persistence;
+	private: System::Windows::Forms::Label^  label8;
+	private: System::Windows::Forms::NumericUpDown^  seed;
+	private: System::Windows::Forms::Button^  button2;
 
 
 
@@ -97,6 +101,9 @@ namespace PerlinNoise {
 			this->timeLabel = (gcnew System::Windows::Forms::Label());
 			this->label7 = (gcnew System::Windows::Forms::Label());
 			this->persistence = (gcnew System::Windows::Forms::NumericUpDown());
+			this->label8 = (gcnew System::Windows::Forms::Label());
+			this->seed = (gcnew System::Windows::Forms::NumericUpDown());
+			this->button2 = (gcnew System::Windows::Forms::Button());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBox1))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->threads))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->widthN))->BeginInit();
@@ -104,6 +111,7 @@ namespace PerlinNoise {
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->cellSize))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->levels))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->persistence))->BeginInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->seed))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// button1
@@ -181,7 +189,7 @@ namespace PerlinNoise {
 			// widthN
 			// 
 			this->widthN->Anchor = System::Windows::Forms::AnchorStyles::Left;
-			this->widthN->Location = System::Drawing::Point(77, 122);
+			this->widthN->Location = System::Drawing::Point(79, 158);
 			this->widthN->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 10000, 0, 0, 0 });
 			this->widthN->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1, 0, 0, 0 });
 			this->widthN->Name = L"widthN";
@@ -193,7 +201,7 @@ namespace PerlinNoise {
 			// 
 			this->label3->Anchor = System::Windows::Forms::AnchorStyles::Left;
 			this->label3->AutoSize = true;
-			this->label3->Location = System::Drawing::Point(12, 122);
+			this->label3->Location = System::Drawing::Point(14, 158);
 			this->label3->Name = L"label3";
 			this->label3->Size = System::Drawing::Size(35, 13);
 			this->label3->TabIndex = 8;
@@ -203,7 +211,7 @@ namespace PerlinNoise {
 			// 
 			this->label4->Anchor = System::Windows::Forms::AnchorStyles::Left;
 			this->label4->AutoSize = true;
-			this->label4->Location = System::Drawing::Point(12, 150);
+			this->label4->Location = System::Drawing::Point(14, 186);
 			this->label4->Name = L"label4";
 			this->label4->Size = System::Drawing::Size(38, 13);
 			this->label4->TabIndex = 10;
@@ -213,7 +221,7 @@ namespace PerlinNoise {
 			// heightN
 			// 
 			this->heightN->Anchor = System::Windows::Forms::AnchorStyles::Left;
-			this->heightN->Location = System::Drawing::Point(77, 148);
+			this->heightN->Location = System::Drawing::Point(79, 184);
 			this->heightN->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 10000, 0, 0, 0 });
 			this->heightN->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1, 0, 0, 0 });
 			this->heightN->Name = L"heightN";
@@ -226,7 +234,8 @@ namespace PerlinNoise {
 			// 
 			this->cellSize->Anchor = System::Windows::Forms::AnchorStyles::Left;
 			this->cellSize->DecimalPlaces = 4;
-			this->cellSize->Location = System::Drawing::Point(77, 178);
+			this->cellSize->Increment = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1, 0, 0, 65536 });
+			this->cellSize->Location = System::Drawing::Point(79, 214);
 			this->cellSize->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1000, 0, 0, 0 });
 			this->cellSize->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1, 0, 0, 262144 });
 			this->cellSize->Name = L"cellSize";
@@ -238,7 +247,7 @@ namespace PerlinNoise {
 			// 
 			this->label5->Anchor = System::Windows::Forms::AnchorStyles::Left;
 			this->label5->AutoSize = true;
-			this->label5->Location = System::Drawing::Point(9, 180);
+			this->label5->Location = System::Drawing::Point(11, 216);
 			this->label5->Name = L"label5";
 			this->label5->Size = System::Drawing::Size(47, 13);
 			this->label5->TabIndex = 12;
@@ -249,7 +258,7 @@ namespace PerlinNoise {
 			// 
 			this->label6->Anchor = System::Windows::Forms::AnchorStyles::Left;
 			this->label6->AutoSize = true;
-			this->label6->Location = System::Drawing::Point(12, 212);
+			this->label6->Location = System::Drawing::Point(14, 248);
 			this->label6->Name = L"label6";
 			this->label6->Size = System::Drawing::Size(38, 13);
 			this->label6->TabIndex = 14;
@@ -258,7 +267,7 @@ namespace PerlinNoise {
 			// levels
 			// 
 			this->levels->Anchor = System::Windows::Forms::AnchorStyles::Left;
-			this->levels->Location = System::Drawing::Point(77, 210);
+			this->levels->Location = System::Drawing::Point(79, 246);
 			this->levels->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 128, 0, 0, 0 });
 			this->levels->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1, 0, 0, 0 });
 			this->levels->Name = L"levels";
@@ -286,7 +295,7 @@ namespace PerlinNoise {
 			// 
 			this->label7->Anchor = System::Windows::Forms::AnchorStyles::Left;
 			this->label7->AutoSize = true;
-			this->label7->Location = System::Drawing::Point(9, 248);
+			this->label7->Location = System::Drawing::Point(11, 284);
 			this->label7->Name = L"label7";
 			this->label7->Size = System::Drawing::Size(62, 13);
 			this->label7->TabIndex = 17;
@@ -297,7 +306,8 @@ namespace PerlinNoise {
 			// 
 			this->persistence->Anchor = System::Windows::Forms::AnchorStyles::Left;
 			this->persistence->DecimalPlaces = 4;
-			this->persistence->Location = System::Drawing::Point(77, 246);
+			this->persistence->Increment = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1, 0, 0, 65536 });
+			this->persistence->Location = System::Drawing::Point(79, 282);
 			this->persistence->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1000, 0, 0, 0 });
 			this->persistence->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1, 0, 0, 262144 });
 			this->persistence->Name = L"persistence";
@@ -306,11 +316,47 @@ namespace PerlinNoise {
 			this->persistence->Value = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1, 0, 0, 196608 });
 			this->persistence->ValueChanged += gcnew System::EventHandler(this, &MainForm::numericUpDown1_ValueChanged_1);
 			// 
+			// label8
+			// 
+			this->label8->Anchor = System::Windows::Forms::AnchorStyles::Left;
+			this->label8->AutoSize = true;
+			this->label8->Location = System::Drawing::Point(14, 129);
+			this->label8->Name = L"label8";
+			this->label8->Size = System::Drawing::Size(32, 13);
+			this->label8->TabIndex = 18;
+			this->label8->Text = L"Seed";
+			this->label8->Click += gcnew System::EventHandler(this, &MainForm::label8_Click);
+			// 
+			// seed
+			// 
+			this->seed->Anchor = System::Windows::Forms::AnchorStyles::Left;
+			this->seed->Location = System::Drawing::Point(79, 127);
+			this->seed->Maximum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 100000000, 0, 0, 0 });
+			this->seed->Minimum = System::Decimal(gcnew cli::array< System::Int32 >(4) { 100000000, 0, 0, System::Int32::MinValue });
+			this->seed->Name = L"seed";
+			this->seed->Size = System::Drawing::Size(120, 20);
+			this->seed->TabIndex = 19;
+			this->seed->Value = System::Decimal(gcnew cli::array< System::Int32 >(4) { 1, 0, 0, 0 });
+			// 
+			// button2
+			// 
+			this->button2->Anchor = System::Windows::Forms::AnchorStyles::Bottom;
+			this->button2->Location = System::Drawing::Point(205, 124);
+			this->button2->Name = L"button2";
+			this->button2->Size = System::Drawing::Size(75, 23);
+			this->button2->TabIndex = 20;
+			this->button2->Text = L"Change";
+			this->button2->UseVisualStyleBackColor = true;
+			this->button2->Click += gcnew System::EventHandler(this, &MainForm::button2_Click);
+			// 
 			// MainForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(606, 422);
+			this->Controls->Add(this->button2);
+			this->Controls->Add(this->seed);
+			this->Controls->Add(this->label8);
 			this->Controls->Add(this->label7);
 			this->Controls->Add(this->persistence);
 			this->Controls->Add(this->timeLabel);
@@ -338,6 +384,7 @@ namespace PerlinNoise {
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->cellSize))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->levels))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->persistence))->EndInit();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->seed))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -360,6 +407,8 @@ namespace PerlinNoise {
 
 	private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) {
 
+		this->button1->Enabled = false;
+
 		LPCWSTR nameC = L"perlinNoiseCDll";
 		LPCWSTR nameAsm = L"perlinNoiseAsmDll";
 
@@ -369,13 +418,13 @@ namespace PerlinNoise {
 
 		if (!radioCDLL->Checked && radioAsmDLL->Checked) {
 			Generator ^ generator = gcnew Generator(
-				gcnew InputData( (unsigned)threads->Value, (unsigned)widthN->Value, (unsigned)heightN->Value, 0, (double)cellSize->Value, (unsigned)levels->Value, (double)persistence->Value, false )
+				gcnew InputData( (unsigned)threads->Value, (unsigned)widthN->Value, (unsigned)heightN->Value, (int)seed->Value, (double)cellSize->Value, (unsigned)levels->Value, (double)persistence->Value, false )
 				, nameAsm
 			);
 			generator->Generate();
 		}else if (radioCDLL->Checked && !radioAsmDLL->Checked) {
 			Generator ^ generator = gcnew Generator(
-				gcnew InputData((unsigned)threads->Value, (unsigned)widthN->Value, (unsigned)heightN->Value, 0, (double)cellSize->Value, (unsigned)levels->Value, (double)persistence->Value, false)
+				gcnew InputData((unsigned)threads->Value, (unsigned)widthN->Value, (unsigned)heightN->Value, (int)seed->Value, (double)cellSize->Value, (unsigned)levels->Value, (double)persistence->Value, false)
 				, nameC
 			);
 			generator->Generate();
@@ -384,9 +433,9 @@ namespace PerlinNoise {
 		auto finish = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<double> elapsed = finish - start;
 		timeLabel->Text = "Elapsed Time: " + elapsed.count().ToString() + " sec";
-
-
 		pictureBox1->Image = Image::FromFile("tmp.bmp");
+
+		this->button1->Enabled = true;
 
 	}
 	private: System::Void pictureBox1_Click(System::Object^  sender, System::EventArgs^  e) {
@@ -426,6 +475,11 @@ private: System::Void label7_Click(System::Object^  sender, System::EventArgs^  
 private: System::Void label7_Click_1(System::Object^  sender, System::EventArgs^  e) {
 }
 private: System::Void numericUpDown1_ValueChanged_1(System::Object^  sender, System::EventArgs^  e) {
+}
+private: System::Void label8_Click(System::Object^  sender, System::EventArgs^  e) {
+}
+private: System::Void button2_Click(System::Object^  sender, System::EventArgs^  e) {
+	this->seed->Value = rand() % 10000000;
 }
 };
 }

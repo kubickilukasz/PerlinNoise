@@ -5,6 +5,7 @@
 using namespace System::Threading;
 
 typedef INT(CALLBACK* DLLFUNCTION)(unsigned char*, int*, float*);
+typedef VOID(CALLBACK* SET_SEED)(int);
 
 public ref struct InputData {
 	unsigned numberOfThreads;
@@ -21,7 +22,7 @@ public ref struct InputData {
 		long int seed,
 		double cellSize,
 		unsigned levels,
-		float attenuation,
+		double persistence,
 		bool color
 	) : 
 		numberOfThreads(numberOfThreads),
