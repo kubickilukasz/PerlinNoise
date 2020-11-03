@@ -48,7 +48,6 @@ public ref class Generator{
 	//default contrustor
 	Generator() {}
 
-
 public:
 
 	//init generator with the new values
@@ -65,8 +64,6 @@ public:
 
 			int heightSingleThread = (int)(inputData->height / inputData->numberOfThreads);
 			int restPixels = inputData->height - (inputData->numberOfThreads * heightSingleThread);
-
-			System::Console::WriteLine(inputData->persistence);
 
 			std::vector<unsigned char> image;
 			image.resize(inputData->height * inputData->width * BYTES_PER_PIXEL);
