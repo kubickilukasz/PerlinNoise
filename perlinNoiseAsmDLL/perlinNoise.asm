@@ -274,126 +274,47 @@ _DATA   ENDS
 
 .CODE
 
-tmp$ = 0
-x$ = 32
-y$ = 40
 noise2  PROC
 $LN3:
-        mov     DWORD PTR [rsp+16], edx
-        mov     DWORD PTR [rsp+8], ecx
-        sub     rsp, 24
+		xor		rax, rax
         mov     eax, DWORD PTR SEED
-        mov     ecx, DWORD PTR y$[rsp]
-        add     ecx, eax
-        mov     eax, ecx
-        cdq
-        and     edx, 255                      ; 000000ffH
         add     eax, edx
-        and     eax, 255                      ; 000000ffH
-        sub     eax, edx
-        cdqe
-        lea     rcx, OFFSET hash				;FLAT
-        mov     eax, DWORD PTR [rcx+rax*4]
-        mov     DWORD PTR tmp$[rsp], eax
-        mov     eax, DWORD PTR x$[rsp]
-        mov     ecx, DWORD PTR tmp$[rsp]
-        add     ecx, eax
-        mov     eax, ecx
-        cdq
-        and     edx, 255                      ; 000000ffH
-        add     eax, edx
-        and     eax, 255                      ; 000000ffH
-        sub     eax, edx
-        cdqe
-        lea     rcx, OFFSET hash				;FLAT
-        mov     eax, DWORD PTR [rcx+rax*4]
-        add     rsp, 24
+		movzx	eax, al
+		cdqe
+        ;lea     rcx, OFFSET hash				;FLAT
+        lea     rdx, hash				;FLAT
+        mov     eax, DWORD PTR [rdx+rax*4]
+		add		eax, ecx 
+		movzx	eax, al
+		cdqe			
+        mov     eax, DWORD PTR [rdx+rax*4]
         ret     0
 noise2  ENDP
 
-x$ = 8
-y$ = 16
-s$ = 24
+
 lin_inter PROC
-        movss   DWORD PTR [rsp+24], xmm2
-        movss   DWORD PTR [rsp+16], xmm1
-        movss   DWORD PTR [rsp+8], xmm0
-        movss   xmm0, DWORD PTR y$[rsp]
-        subss   xmm0, DWORD PTR x$[rsp]
-        movss   xmm1, DWORD PTR s$[rsp]
-        mulss   xmm1, xmm0
-        movaps  xmm0, xmm1
-        movss   xmm1, DWORD PTR x$[rsp]
-        addss   xmm1, xmm0
-        movaps  xmm0, xmm1
+		subss	xmm1, xmm0
+		mulss	xmm1, xmm2
+		addss	xmm0, xmm1
         ret     0
 lin_inter ENDP
 
-x$ = 48
-y$ = 56
-s$ = 64
+
 smooth_inter PROC
-        ;movss   DWORD PTR [rsp+24], xmm2
-        ;movss   DWORD PTR [rsp+16], xmm1
-        ;movss   DWORD PTR [rsp+8], xmm0
-        ;sub     rsp, 40                             ; 00000028H
-
-		;movss	xmm4, DWORD PTR __real@40000000 ; 2
-		;mulss	xmm4, xmm2	 ; 2 * s
-		;movss	xmm5, DWORD PTR __real@40400000 ; 3
-		;subss	xmm5, xmm4 ; 3 - 2 * s
-		;mulss	xmm2, xmm2 ; s = s * s
-		;mulss	xmm2, xmm5 ; s * s * ( 3 - 2 * s )
-		;call    lin_inter
-		;ret     0
-
-        ;movss   xmm4, DWORD PTR xmm0
-        ;mulss   xmm4, DWORD PTR xmm0
-        ;movss   xmm1, DWORD PTR __real@40000000
-        ;mulss   xmm1, DWORD PTR s$[rsp]
-        ;movss   xmm2, DWORD PTR __real@40400000
-        ;subss   xmm2, xmm1
-        ;movaps  xmm1, xmm2
-        ;mulss   xmm0, xmm1
-        ;movaps  xmm2, xmm0
-        ;movss   xmm1, DWORD PTR y$[rsp]
-        ;movss   xmm0, DWORD PTR x$[rsp]
-        ;add     rsp, 40                             ; 00000028H
-$LN3:
-        movss   DWORD PTR [rsp+24], xmm2
-        movss   DWORD PTR [rsp+16], xmm1
-        movss   DWORD PTR [rsp+8], xmm0
-        sub     rsp, 40                             ; 00000028H
-        movss   xmm0, DWORD PTR s$[rsp]
-        mulss   xmm0, DWORD PTR s$[rsp]
-        movss   xmm1, DWORD PTR __real@40000000
-        mulss   xmm1, DWORD PTR s$[rsp]
-        movss   xmm2, DWORD PTR __real@40400000
-        subss   xmm2, xmm1
-        movaps  xmm1, xmm2
-        mulss   xmm0, xmm1
-        movaps  xmm2, xmm0
-        movss   xmm1, DWORD PTR y$[rsp]
-        movss   xmm0, DWORD PTR x$[rsp]
-        call    lin_inter
-        add     rsp, 40                             ; 00000028H
-        ret     0
+		movss	xmm3, xmm0
+		movss	xmm0, DWORD PTR __real@40000000 ; 2
+		mulss	xmm0, xmm2	 ; 2 * s
+		movss	xmm4, DWORD PTR __real@40400000 ; 3
+		subss	xmm4, xmm0 ; 3 - 2 * s
+		mulss	xmm2, xmm2 ; s = s * s
+		mulss	xmm4, xmm2 ; s * s * ( 3 - 2 * s )
+		movss	xmm2, xmm4
+		movss	xmm0, xmm3
+		call    lin_inter
+		ret     0
 smooth_inter ENDP
 
-y_int$ = 32
-x_int$ = 36
-x_frac$ = 40
-t$ = 44
-s$ = 48
-tv90 = 52
-v$ = 56
-u$ = 60
-tv128 = 64
-y_frac$ = 68
-high$ = 72
-low$ = 76
-x$ = 96
-y$ = 104
+
 noise2d PROC
 
 LOCAL xV : DWORD
@@ -405,11 +326,7 @@ LOCAL y_int : DWORD
 LOCAL x_frac : DWORD
 LOCAL y_frac : DWORD
 
-
 $LN3:
-       ; movss   DWORD PTR [rsp+16], xmm1
-       ; movss   DWORD PTR [rsp+8], xmm0
-       ; sub     rsp, 88                             ; 00000058H
 		movd		xV, xmm0;
 		cvttss2si	eax, xmm0
 		mov			x_int, eax
@@ -419,20 +336,13 @@ $LN3:
 		mov			y_int, eax
 
 		cvtsi2ss xmm0, DWORD PTR x_int
-		cvtsi2ss xmm1, DWORD PTR y_int
-       ; cvttss2si eax, DWORD PTR x$[rsp]
-       ; mov     DWORD PTR x_int$[rsp], eax
-       ; cvttss2si eax, DWORD PTR y$[rsp]
-       ; mov     DWORD PTR y_int$[rsp], eax
-        cvtsi2ss xmm0, DWORD PTR x_int
+		;cvtsi2ss xmm1, DWORD PTR y_int
         movss   xmm1, DWORD PTR xV
         subss   xmm1, xmm0
-        ;movaps  xmm0, xmm1
         movss   DWORD PTR x_frac, xmm1
         cvtsi2ss xmm0, DWORD PTR y_int
         movss   xmm1, DWORD PTR yV
         subss   xmm1, xmm0
-        ;movaps  xmm0, xmm1
         movss   DWORD PTR y_frac, xmm1
         mov     edx, DWORD PTR y_int
         mov     ecx, DWORD PTR x_int
@@ -457,41 +367,24 @@ $LN3:
         mov     edx, eax
         call    noise2
         mov     r11d, eax				;v
-        cvtsi2ss xmm0, r9d
-        cvtsi2ss xmm1, r8d
-        movss   DWORD PTR xV, xmm1
-        movss   xmm2, DWORD PTR x_frac
-        movaps  xmm1, xmm0
-        movss   xmm0, DWORD PTR xV
+		movss   xmm2, DWORD PTR x_frac
+		cvtsi2ss xmm1, r9d ; t
+		cvtsi2ss xmm0, r8d ; s
         call    smooth_inter
-        movss   DWORD PTR xV, xmm0
-        cvtsi2ss xmm0, r11d
-        cvtsi2ss xmm1, r10d
-        movss   DWORD PTR yV, xmm1
-        movss   xmm2, DWORD PTR x_frac
-        movaps  xmm1, xmm0
-        movss   xmm0, DWORD PTR yV
+        movss   DWORD PTR xV, xmm0 ; low
+		movss   xmm2, DWORD PTR x_frac
+		cvtsi2ss xmm1, r11d ; v
+		cvtsi2ss xmm0, r10d ; u
         call    smooth_inter
         movss   DWORD PTR yV, xmm0
         movss   xmm2, DWORD PTR y_frac
-        movss   xmm1, DWORD PTR xV; high
-        movss   xmm0, DWORD PTR yV; low
+        movss   xmm1, DWORD PTR yV; high
+        movss   xmm0, DWORD PTR xV; low
         call    smooth_inter
-       ; add     rsp, 88                             ; 00000058H
         ret     0
 noise2d ENDP
 
-amp$ = 32
-i$ = 36
-xa$ = 40
-ya$ = 44
-fin$ = 48
-div$ = 52
-x$ = 80
-y$ = 88
-freq$ = 96
-depth$ = 104
-persistence$ = 112
+
 perlin2d PROC
 
 LOCAL iIndex : DWORD
@@ -506,48 +399,25 @@ $LN6:
 		mov rax, 0
 		mov DWORD PTR fin, eax
 		mov DWORD PTR divV, eax
-       ; mov     DWORD PTR [rsp+32], r9d
-        ;movss   DWORD PTR [rsp+24], xmm2
-        ;movss   DWORD PTR [rsp+16], xmm1
-        ;movss   DWORD PTR [rsp+8], xmm0
-        ;sub     rsp, 72                             ; 00000048H
-       ; movss   xmm0, DWORD PTR x$[rsp]
+
         mulss   xmm0, xmm2;DWORD PTR freq$[rsp]
 		movss	DWORD PTR xa, xmm0
-        ;movss   DWORD PTR xa$[rsp], xmm0
-        ;movss   xmm0, DWORD PTR y$[rsp]
-        mulss   xmm1, xmm2;DWORD PTR freq$[rsp]
+
+        mulss   xmm1, xmm2
 		movss	DWORD PTR ya, xmm1
-       ; movss   DWORD PTR ya$[rsp], xmm0
-       ; movss   xmm0, DWORD PTR __real@3f800000
-       ; movss   DWORD PTR amp$[rsp], xmm0
-       ; xorps   xmm0, xmm0
-       ; movss   DWORD PTR fin$[rsp], xmm0
-       ; xorps   xmm0, xmm0
-       ; movss   DWORD PTR div$[rsp], xmm0
         mov     DWORD PTR iIndex, 0
         jmp     SHORT $LN4@perlin2d
 $LN2@perlin2d:
-       ; mov     eax, DWORD PTR iIndex
-        inc      DWORD PTR iIndex ;eax
-       ; mov     DWORD PTR i$[rsp], eax
+        inc      DWORD PTR iIndex
 $LN4@perlin2d:
         mov     eax, DWORD PTR levels
         cmp     DWORD PTR iIndex, eax
         jge     $LN3@perlin2d
-       ; movss   xmm0, DWORD PTR __real@43800000
-       ; mulss   xmm0, DWORD PTR amp$[rsp]
-       ; movss   xmm1, DWORD PTR div$[rsp]
-       ; addss   xmm1, xmm0
-      ;  movaps  xmm0, xmm1
-       ; movss   DWORD PTR div$[rsp], xmm0
-      ;  movss   xmm1, DWORD PTR ya
-      ;  movss   xmm0, DWORD PTR xa
+
         call    noise2d
-        mulss   xmm0, DWORD PTR amp;$[rsp]
-        movss   xmm1, DWORD PTR fin;$[rsp]
+        mulss   xmm0, DWORD PTR amp
+        movss   xmm1, DWORD PTR fin
         addss   xmm1, xmm0
-        ;movaps  xmm0, xmm1
         movss   DWORD PTR fin, xmm1
 
 		movss   xmm0, DWORD PTR __real@43800000
@@ -570,24 +440,10 @@ $LN4@perlin2d:
 $LN3@perlin2d:
         movss   xmm0, DWORD PTR fin
         divss   xmm0, DWORD PTR divV
-        ;add     rsp, 72                             ; 00000048H
         ret     0
 perlin2d ENDP
 
-value$1 = 48
-i$2 = 52
-j$3 = 56
-bytesPerPixel$ = 60
-width$ = 64
-offset$ = 68
-height$ = 72
-cellSize$ = 76
-persistence$ = 80
-levels$ = 84
-tv90 = 88
-data$ = 112
-param$ = 120
-fParam$ = 128
+
 PERLIN_NOISE PROC
 
 LOCAL dataPointer : QWORD 
@@ -597,25 +453,10 @@ LOCAL heightPic : DWORD
 LOCAL jIndex : DWORD
 
 $LN9:
-      ;  mov     QWORD PTR [rsp+24], r8
-      ;  mov     QWORD PTR [rsp+16], rdx
-      ;  mov     QWORD PTR [rsp+8], rcx
-      ;  sub     rsp, 104                      ; 00000068H
-      ;  mov     eax, 4
-      ;  imul    rax, rax, 3
-     ;   mov     rcx, QWORD PTR [rsp + 16] ;param$[rsp]
-     ;   mov     eax, DWORD PTR [rcx+rax]
-      ;  mov     DWORD PTR offset$[rsp], eax
-		;mov		rax, QWORD PTR [rsp + rdx]
-		;mov		QWORD PTR dataPointer, rcx
+
 		mov		r15, rcx
 		mov		eax, DWORD PTR [rdx + 12]
 		mov		DWORD PTR cOffset, eax
-       ; mov     eax, 4
-       ; imul    rax, rax, 0
-       ; mov     rcx, QWORD PTR param$[rsp]
-       ; mov     eax, DWORD PTR [rcx+rax]
-       ; mov     DWORD PTR width$[rsp], eax
 		mov		eax, DWORD PTR [rdx]
 		mov		DWORD PTR widthPic, eax 
 		mov		eax, DWORD PTR [rdx + 4]
@@ -629,69 +470,28 @@ $LN9:
 		mov		DWORD PTR cellSize, eax
 		mov		eax, DWORD PTR [r8 + 4]
 		mov		DWORD PTR persistence, eax
-        ;mov     eax, 4
-        ;imul    rax, rax, 1
-        ;mov     rcx, QWORD PTR param$[rsp]
-        ;mov     eax, DWORD PTR [rcx+rax]
-        ;add     eax, DWORD PTR offset$[rsp]
-        ;mov     DWORD PTR height$[rsp], eax
-        ;mov     eax, 4
-        ;imul    rax, rax, 2
-        ;mov     rcx, QWORD PTR param$[rsp]
-        ;mov     eax, DWORD PTR [rcx+rax]
-        ;mov     DWORD PTR bytesPerPixel$[rsp], eax
-        ;mov     eax, 4
-        ;imul    rax, rax, 4
-        ;mov     rcx, QWORD PTR param$[rsp]
-        ;mov     eax, DWORD PTR [rcx+rax]
-        ;mov     DWORD PTR levels$[rsp], eax
-        ;mov     eax, 4
-        ;imul    rax, rax, 0
-        ;mov     rcx, QWORD PTR fParam$[rsp]
-        ;movss   xmm0, DWORD PTR [rcx+rax]
-        ;movss   DWORD PTR cellSize$[rsp], xmm0
-        ;mov     eax, 4
-        ;imul    rax, rax, 1
-        ;mov     rcx, QWORD PTR fParam$[rsp]
-        ;movss   xmm0, DWORD PTR [rcx+rax]
-        ;movss   DWORD PTR persistence$[rsp], xmm0
-		;mov     eax, DWORD PTR offset$[rsp]
-        ;mov     DWORD PTR i$2[rsp], eax
         jmp     SHORT $LN4@PERLIN_NOI
 $LN2@PERLIN_NOI:
         mov     eax, DWORD PTR cOffset
         inc     eax
         mov		DWORD PTR cOffset, eax
 $LN4@PERLIN_NOI:
-        ;mov     eax, DWORD PTR height$[rsp]
-        ;cmp     DWORD PTR i$2[rsp], eax
 		mov		eax,  DWORD PTR heightPic
 		cmp		DWORD PTR cOffset, eax
         jge     $LN3@PERLIN_NOI
         mov     DWORD PTR jIndex, 0
         jmp     SHORT $LN7@PERLIN_NOI
 $LN5@PERLIN_NOI:
-        ;mov     eax, j
-        ;inc     eax
-        ;mov     j, eax
 		inc DWORD PTR jIndex
 $LN7@PERLIN_NOI:
-        ;mov     eax, DWORD PTR width$[rsp]
-        ;cmp     DWORD PTR j$3[rsp], eax
 		mov		eax,  DWORD PTR widthPic
 		cmp		 DWORD PTR jIndex, eax
         jge     $LN2@PERLIN_NOI
 		mov		rax, 00111111100000000000000000000000b ; 1
         movq	xmm2, rax
         subss   xmm2, DWORD PTR cellSize
-        cvtsi2ss xmm1, DWORD PTR jIndex
-        cvtsi2ss xmm0, cOffset
-      ;  movss   DWORD PTR tv90[rsp], xmm2
-       ; movss   xmm3, DWORD PTR persistence
-       ; movss   DWORD PTR [rsp+32], xmm3
-       ; mov     r9d, DWORD PTR levels
-       ; movaps  xmm2, xmm0
-       ; movss   xmm0, DWORD PTR tv90[rsp]
+        cvtsi2ss xmm1, DWORD PTR cOffset
+        cvtsi2ss xmm0, DWORD PTR jIndex
         call    perlin2d
 		mov		rax, 01000011011111110000000000000000b ; 255
 		movq	xmm1, rax
@@ -705,42 +505,12 @@ $LN7@PERLIN_NOI:
         mov     ecx, DWORD PTR jIndex
         imul    ecx, DWORD PTR bytesPerPixel
         add     eax, ecx
-		;lea		eax, DWORD PTR [rax+rcx]
-        ;cdqe
-       ; mov     rcx, QWORD PTR dataPointer;data$[rsp]
-		;mov		rcx, r15
-        ;mov		edx, R8d
         mov     BYTE PTR [r15 + rax], R8b
         mov     BYTE PTR [r15 + rax + 1], R8b
         mov     BYTE PTR [r15 + rax + 2], R8b
-       ; mov     BYTE PTR [rcx+rax + 1], R8b
-       ; mov     BYTE PTR [rcx+rax + 2], R8b
-      ;  mov     eax, DWORD PTR i$2[rsp]
-      ;  imul    eax, DWORD PTR width$[rsp]
-      ;  imul    eax, DWORD PTR bytesPerPixel$[rsp]
-      ;  mov     ecx, DWORD PTR j$3[rsp]
-      ;  imul    ecx, DWORD PTR bytesPerPixel$[rsp]
-      ;  lea     eax, DWORD PTR [rax+rcx+1]
-      ;  cdqe
-      ;  mov     rcx, QWORD PTR data$[rsp]
-      ;  movzx   edx, BYTE PTR value$1[rsp]
-      ;  mov     BYTE PTR [rcx+rax], dl
-       ; mov     eax, DWORD PTR i$2[rsp]
-       ; imul    eax, DWORD PTR width$[rsp]
-       ; imul    eax, DWORD PTR bytesPerPixel$[rsp]
-       ; mov     ecx, DWORD PTR j$3[rsp]
-       ; imul    ecx, DWORD PTR bytesPerPixel$[rsp]
-       ; lea     eax, DWORD PTR [rax+rcx+2]
-       ; cdqe
-       ; mov     rcx, QWORD PTR data$[rsp]
-       ; movzx   edx, BYTE PTR value$1[rsp]
-       ; mov     BYTE PTR [rcx+rax], dl
         jmp     $LN5@PERLIN_NOI
-;$LN6@PERLIN_NOI:
-;        jmp     $LN2@PERLIN_NOI
 $LN3@PERLIN_NOI:
         xor     eax, eax
-       ; add     rsp, 104                      ; 00000068H
         ret     0
 PERLIN_NOISE ENDP
 

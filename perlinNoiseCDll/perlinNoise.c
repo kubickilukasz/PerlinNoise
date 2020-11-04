@@ -87,7 +87,7 @@ unsigned PERLIN_NOISE(unsigned char * data, int * param, float * fParam) {
 	int i, j;
 	for (int i = offset; i < height; i++) {
 		for (int j = 0; j < width; j++) {
-			unsigned char value = (unsigned char)(perlin2d(i, j, 1 - cellSize, levels, persistence) * 255);
+			unsigned char value = (unsigned char)(perlin2d(j, i, 1 - cellSize, levels, persistence) * 255);
 			data[i * width * bytesPerPixel + j * bytesPerPixel] = value;
 			data[i * width * bytesPerPixel + j * bytesPerPixel + 1] = value;
 			data[i * width * bytesPerPixel + j * bytesPerPixel + 2] = value;
