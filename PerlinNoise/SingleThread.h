@@ -5,6 +5,8 @@
 #include <windows.h>
 #include <vector>
 
+using namespace System;
+
 public ref class SingleThread {
 
 	InputData ^ inData;
@@ -13,6 +15,9 @@ public ref class SingleThread {
 
 	int offset;
 	int partHeight;
+
+	int i,j,height,width;
+	unsigned char value;
 
 	DLLFUNCTION Func;
 
@@ -26,7 +31,7 @@ public:
 
 	void ThreadFunction(Object ^ object) {
 
-		int param[]{
+		/*int param[]{
 					inData->width
 					,partHeight
 					,BYTES_PER_PIXEL
@@ -39,7 +44,20 @@ public:
 			,inData->persistence
 		};
 
-		Func(data, param, fParam);
+		Func(data, param, fParam);*/
+
+		height = partHeight + offset;
+		width = inData->width;
+
+		for (i = offset; i < height; i++) {
+			for (j = 0; j < width; j++) {
+				value = (unsigned char)(Func((float)j, (float)i, 1 - inData->cellSize, inData->persistence, inData->levels) * 255);
+				data[i * inData->width * BYTES_PER_PIXEL + j * BYTES_PER_PIXEL] = value;
+				data[i * inData->width * BYTES_PER_PIXEL + j * BYTES_PER_PIXEL + 1] = value;
+				data[i * inData->width * BYTES_PER_PIXEL + j * BYTES_PER_PIXEL + 2] = value;
+			}
+		}
+
 	}
 
 };

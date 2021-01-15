@@ -4,14 +4,15 @@
 
 using namespace System::Threading;
 
-typedef INT(CALLBACK* DLLFUNCTION)(unsigned char*, int*, float*);
+//typedef INT(CALLBACK* DLLFUNCTION)(unsigned char*, int*, float*);
+typedef float(CALLBACK* DLLFUNCTION)(float x, float y, float freq, float persistence, int depth);
 typedef VOID(CALLBACK* SET_SEED)(int);
 
 public ref struct InputData {
 	unsigned numberOfThreads;
 	unsigned width, height;
 	long int seed;
-	double cellSize;
+	float cellSize;
 	unsigned levels;
 	float persistence;
 	bool color;
@@ -20,9 +21,9 @@ public ref struct InputData {
 		unsigned width,
 		unsigned height,
 		long int seed,
-		double cellSize,
+		float cellSize,
 		unsigned levels,
-		double persistence,
+		float persistence,
 		bool color
 	) : 
 		numberOfThreads(numberOfThreads),

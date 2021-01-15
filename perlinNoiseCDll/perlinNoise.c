@@ -51,7 +51,7 @@ float noise2d(float x, float y)
 	return smooth_inter(low, high, y_frac);
 }
 
-float perlin2d(float x, float y, float freq, int depth, float persistence)
+float PERLIN2D(float x, float y, float freq, float persistence, int depth)
 {
 	float xa = x * freq;
 	float ya = y * freq;
@@ -72,7 +72,7 @@ float perlin2d(float x, float y, float freq, int depth, float persistence)
 	return fin / div;
 }
 
-
+/*
 unsigned PERLIN_NOISE(unsigned char * data, int * param, float * fParam) {
 
 	int offset = param[3];
@@ -87,7 +87,7 @@ unsigned PERLIN_NOISE(unsigned char * data, int * param, float * fParam) {
 	int i, j;
 	for (int i = offset; i < height; i++) {
 		for (int j = 0; j < width; j++) {
-			unsigned char value = (unsigned char)(perlin2d(j, i, 1 - cellSize, levels, persistence) * 255);
+			unsigned char value = (unsigned char)(PERLIN2D(j, i, 1 - cellSize, levels, persistence) * 255);
 			data[i * width * bytesPerPixel + j * bytesPerPixel] = value;
 			data[i * width * bytesPerPixel + j * bytesPerPixel + 1] = value;
 			data[i * width * bytesPerPixel + j * bytesPerPixel + 2] = value;
@@ -95,7 +95,55 @@ unsigned PERLIN_NOISE(unsigned char * data, int * param, float * fParam) {
 	}
 
 	return 0;
-}
+}*/
+
+/*
+ movss   xmm1, DWORD PTR xV
+		subss   xmm1, xmm0
+		movss   DWORD PTR x_frac, xmm1
+		cvtsi2ss xmm0, DWORD PTR y_int
+		movss   xmm1, DWORD PTR yV
+		subss   xmm1, xmm0
+		movss   DWORD PTR y_frac, xmm1
+		mov     edx, DWORD PTR y_int
+		mov     ecx, DWORD PTR x_int
+		call    noise2
+		mov     r8d, eax				;s
+		mov     eax, DWORD PTR x_int
+		inc     eax
+		mov     edx, DWORD PTR y_int
+		mov     ecx, eax
+		call    noise2
+		mov     r9d, eax				;t
+		mov     eax, DWORD PTR y_int
+		inc     eax
+		mov     edx, eax
+		mov     ecx, DWORD PTR x_int
+		call    noise2
+		mov     r10d, eax				;u
+		mov     eax, DWORD PTR y_int
+		inc     eax
+		mov     ecx, DWORD PTR x_int
+		inc     ecx
+		mov     edx, eax
+		call    noise2
+		mov     r11d, eax				;v
+		movss   xmm2, DWORD PTR x_frac
+		cvtsi2ss xmm1, r9d ; t
+		cvtsi2ss xmm0, r8d ; s
+		call    smooth_inter
+		movss   DWORD PTR xV, xmm0 ; low
+		movss   xmm2, DWORD PTR x_frac
+		cvtsi2ss xmm1, r11d ; v
+		cvtsi2ss xmm0, r10d ; u
+		call    smooth_inter
+		movss   DWORD PTR yV, xmm0
+		movss   xmm2, DWORD PTR y_frac
+		movss   xmm1, DWORD PTR yV; high
+		movss   xmm0, DWORD PTR xV; low
+		call    smooth_inter
+
+*/
 
 void SET_SEED(int seed) {
 	SEED = seed;

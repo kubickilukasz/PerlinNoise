@@ -1,0 +1,215 @@
+#include <immintrin.h>
+#include <smmintrin.h>
+#include <emmintrin.h>
+
+const int NOISE_X = 1213;
+const int NOISE_Y = 6203;
+const int NOISE_Z = 5237;
+const int NOISE_SEED = 1039;
+const int NOISE_SHIFT = 13;
+
+namespace simd
+{
+	typedef __m128i v128i;
+	typedef __m128d v128d;
+	typedef __m128 v128f;
+
+	enum VectorSelect
+	{
+		Ax = 0, Ay = 1, Az = 2, Aw = 3,
+		Bx = 8, By = 9, Bz = 10, Bw = 11,
+	};
+
+
+	template <VectorSelect S0, VectorSelect S1, VectorSelect S2, VectorSelect S3>
+	inline v128f shuffle_ps(v128f x, v128f y)
+	{
+		STATIC_ASSERT(S0 >= Ax && S0 <= Aw);
+		STATIC_ASSERT(S1 >= Ax && S1 <= Aw);
+		STATIC_ASSERT(S2 >= Bx && S2 <= Bw);
+		STATIC_ASSERT(S3 >= Bx && S3 <= Bw);
+		return _mm_shuffle_ps(x, y, S0 + S1 * 4 + (S2 - Bx) * 16 + (S3 - Bx) * 64);
+	}
+
+	template<VectorSelect S0, VectorSelect S1, VectorSelect S2, VectorSelect S3>
+	inline v128f blend_ps(v128f x, v128f y)
+	{
+		STATIC_ASSERT(S0 == Ax || S0 == Bx);
+		STATIC_ASSERT(S1 == Ay || S1 == By);
+		STATIC_ASSERT(S2 == Az || S2 == Bz);
+		STATIC_ASSERT(S3 == Aw || S3 == Bw);
+		return _mm_blend_ps(x, y, (S0 / Bx) * 1 + (S1 / By) * 2 + (S2 / Bz) * 4 + (S3 / Bw) * 8);
+	}
+
+	template<VectorSelect S0, VectorSelect S1, VectorSelect S2>
+	inline v128f blend_ps(v128f x, v128f y)
+	{
+		STATIC_ASSERT(S0 == Ax || S0 == Bx);
+		STATIC_ASSERT(S1 == Ay || S1 == By);
+		STATIC_ASSERT(S2 == Az || S2 == Bz);
+		return _mm_blend_ps(x, y, (S0 / Bx) * 1 + (S1 / By) * 2 + (S2 / Bz) * 4);
+	}
+
+
+	template <VectorSelect S0, VectorSelect S1, VectorSelect S2, VectorSelect S3>
+	inline v128i shuffle_epi32(v128i x)
+	{
+		STATIC_ASSERT(S0 >= Ax && S0 <= Aw);
+		STATIC_ASSERT(S1 >= Ax && S1 <= Aw);
+		STATIC_ASSERT(S2 >= Ax && S2 <= Aw);
+		STATIC_ASSERT(S3 >= Ax && S3 <= Aw);
+		return _mm_shuffle_epi32(x, S0 + S1 * 4 + S2 * 16 + S3 * 64);
+	}
+
+
+	inline v128f lerp(v128f t, v128f a, v128f b)
+	{
+		v128f r = _mm_sub_ps(b, a);
+		r = _mm_mul_ps(r, t);
+		r = _mm_add_ps(r, a);
+		return r;
+	}
+
+}
+
+
+static simd::v128f g_RandomGradients_v128f[] = { 208,34,231,213,32,248,233,56,161,78,24,140,71,48,140,254,245,255,247,247,40,
+					 185,248,251,245,28,124,204,204,76,36,1,107,28,234,163,202,224,245,128,167,204,
+					 9,92,217,54,239,174,173,102,193,189,190,121,100,108,167,44,43,77,180,204,8,81,
+					 70,223,11,38,24,254,210,210,177,32,81,195,243,125,8,169,112,32,97,53,195,13,
+					 203,9,47,104,125,117,114,124,165,203,181,235,193,206,70,180,174,0,167,181,41,
+					 164,30,116,127,198,245,146,87,224,149,206,57,4,192,210,65,210,129,240,178,105,
+					 228,108,245,148,140,40,35,195,38,58,65,207,215,253,65,85,208,76,62,3,237,55,89,
+					 232,50,217,64,244,157,199,121,252,90,17,212,203,149,152,140,187,234,177,73,174,
+					 193,100,192,143,97,53,145,135,19,103,13,90,135,151,199,91,239,247,33,39,145,
+					 101,120,99,3,186,86,99,41,237,203,111,79,220,135,158,42,30,154,120,67,87,167,
+					 135,176,183,191,253,115,184,21,233,58,129,233,142,39,128,211,118,137,139,255,
+					 114,20,218,113,154,27,127,246,250,1,8,198,250,209,92,222,173,21,88,102,219 };
+
+simd::v128f __fastcall grad_noise_simd(simd::v128d pos_xy, simd::v128d pos_z)
+{
+
+
+	using namespace simd;
+
+	v128i iONE = 1;
+
+	// Round to the lowest integer boundary
+	// DOUBLE PRECISION
+	v128d pos_xy_0 = _mm_floor_pd(pos_xy);
+	v128d pos_z_0 = _mm_floor_pd(pos_z);
+
+	// Convert to integer to get the lower cube corner
+	v128i xyi = _mm_cvtpd_epi32(pos_xy_0); // float 64 to int 32
+	v128i zi = _mm_cvtpd_epi32(pos_z_0);
+	zi = shuffle_epi32<Az, Aw, Ax, Ay>(zi);
+	v128i cube_pos0 = _mm_add_epi32(xyi, zi);
+
+	// Add one to get the upper cube corner
+	v128i cube_pos1 = _mm_add_epi32(cube_pos0, iONE);
+
+	// Get fractional to lower cube corner
+	// DOUBLE PRECISION
+	v128d t_xy_d = _mm_sub_pd(pos_xy, pos_xy_0);
+	v128d t_z_d = _mm_sub_pd(pos_z, pos_z_0);
+
+	// Convert to higher-throughput float
+	v128f t_xy_f = _mm_cvtpd_ps(t_xy_d);
+	v128f t_zw_f = _mm_cvtpd_ps(t_z_d);
+	v128f t0 = shuffle_ps<Ax, Ay, Bx, By>(t_xy_f, t_zw_f);
+
+	// Get fractional to upper cube corner
+	v128f t1 = _mm_sub_ps(t0, fONE);
+
+	int x0 = cube_pos0.m128i_i32[0];
+	int y0 = cube_pos0.m128i_i32[1];
+	int z0 = cube_pos0.m128i_i32[2];
+
+	int x1 = cube_pos1.m128i_i32[0];
+	int y1 = cube_pos1.m128i_i32[1];
+	int z1 = cube_pos1.m128i_i32[2];
+
+	// Partial hash of extreme cube corner indices
+	int ox0 = NOISE_X * x0 + NOISE_SEED;
+	int oy0 = NOISE_Y * y0;
+	int oz0 = NOISE_Z * z0;
+	int ox1 = NOISE_X * x1 + NOISE_SEED;
+	int oy1 = NOISE_Y * y1;
+	int oz1 = NOISE_Z * z1;
+
+	// Hash all cube corners
+	int index0 = ox0 + oy0 + oz0;
+	int index1 = ox1 + oy0 + oz0;
+	int index2 = ox0 + oy1 + oz0;
+	int index3 = ox1 + oy1 + oz0;
+	int index4 = ox0 + oy0 + oz1;
+	int index5 = ox1 + oy0 + oz1;
+	int index6 = ox0 + oy1 + oz1;
+	int index7 = ox1 + oy1 + oz1;
+	index0 ^= (index0 >> NOISE_SHIFT);
+	index1 ^= (index1 >> NOISE_SHIFT);
+	index2 ^= (index2 >> NOISE_SHIFT);
+	index3 ^= (index3 >> NOISE_SHIFT);
+	index4 ^= (index4 >> NOISE_SHIFT);
+	index5 ^= (index5 >> NOISE_SHIFT);
+	index6 ^= (index6 >> NOISE_SHIFT);
+	index7 ^= (index7 >> NOISE_SHIFT);
+	index0 &= 0xFF;
+	index1 &= 0xFF;
+	index2 &= 0xFF;
+	index3 &= 0xFF;
+	index4 &= 0xFF;
+	index5 &= 0xFF;
+	index6 &= 0xFF;
+	index7 &= 0xFF;
+
+	// Lookup gradients
+	v128f grad0 = g_RandomGradients_v128f[index0];
+	v128f grad1 = g_RandomGradients_v128f[index1];
+	v128f grad2 = g_RandomGradients_v128f[index2];
+	v128f grad3 = g_RandomGradients_v128f[index3];
+	v128f grad4 = g_RandomGradients_v128f[index4];
+	v128f grad5 = g_RandomGradients_v128f[index5];
+	v128f grad6 = g_RandomGradients_v128f[index6];
+	v128f grad7 = g_RandomGradients_v128f[index7];
+
+	// Project permuted offsets onto gradient vector
+	v128f g0_ = _mm_dp_ps(grad0, blend_ps<Ax, Ay, Az>(t0, t1), 0x7F);
+	v128f g1_ = _mm_dp_ps(grad1, blend_ps<Bx, Ay, Az>(t0, t1), 0x7F);
+	v128f g2_ = _mm_dp_ps(grad2, blend_ps<Ax, By, Az>(t0, t1), 0x7F);
+	v128f g3_ = _mm_dp_ps(grad3, blend_ps<Bx, By, Az>(t0, t1), 0x7F);
+	v128f g4_ = _mm_dp_ps(grad4, blend_ps<Ax, Ay, Bz>(t0, t1), 0x7F);
+	v128f g5_ = _mm_dp_ps(grad5, blend_ps<Bx, Ay, Bz>(t0, t1), 0x7F);
+	v128f g6_ = _mm_dp_ps(grad6, blend_ps<Ax, By, Bz>(t0, t1), 0x7F);
+	v128f g7_ = _mm_dp_ps(grad7, blend_ps<Bx, By, Bz>(t0, t1), 0x7F);
+
+	// mix g0, g2, g4, g6 for lerp
+	v128f g02__ = blend_ps<Ax, By, Az, Aw>(g0_, g2_);
+	v128f g__46 = blend_ps<Ax, Ay, Az, Bw>(g4_, g6_);
+	v128f g0246 = blend_ps<Ax, Ay, Bz, Bw>(g02__, g__46);
+
+	// mix g1, g3, g5, g7 for lerp
+	v128f g13__ = blend_ps<Ax, By, Az, Aw>(g1_, g3_);
+	v128f g__57 = blend_ps<Ax, Ay, Az, Bw>(g5_, g7_);
+	v128f g1357 = blend_ps<Ax, Ay, Bz, Bw>(g13__, g__57);
+
+	// Apply a cubic fade to the near distance parameter for trilinear interpolation
+	v128f r = _mm_mul_ps(t0, t0);
+	v128f r0 = _mm_mul_ps(fTWO, t0);
+	r0 = _mm_sub_ps(fTHREE, r0);
+	r = _mm_mul_ps(r, r0);
+
+	// Trilinear interpolation 
+	v128f rx = shuffle_ps<Ax, Ax, Bx, Bx>(r, r);
+	v128f gx0123 = simd::lerp(rx, g0246, g1357);
+
+	v128f ry = shuffle_ps<Ay, Ay, By, By>(r, r);
+	v128f gx1032 = shuffle_ps<Ay, Ax, Bw, Bz>(gx0123, gx0123);
+
+	v128f gy0_1_ = simd::lerp(ry, gx0123, gx1032);
+	v128f rz = shuffle_ps<Az, Az, Bz, Bz>(r, r);
+	v128f gy1_0_ = shuffle_ps<Az, Az, Bx, Bx>(gy0_1_, gy0_1_);
+	v128f gz = simd::lerp(rz, gy0_1_, gy1_0_);
+
+	return gz;
+}

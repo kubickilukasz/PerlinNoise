@@ -22,8 +22,6 @@ public ref class Generator{
 	DLLFUNCTION Func;
 	SET_SEED setSeed;
 
-	//BMP bmpFile;
-
 	//get library instance
 	void GetLibInstance(LPCWSTR _libName) {
 		hInstLibrary = LoadLibrary(_libName);
@@ -31,7 +29,8 @@ public ref class Generator{
 
 	bool GetLibFunction() {
 		if (hInstLibrary) {
-			Func = (DLLFUNCTION)GetProcAddress(hInstLibrary, "PERLIN_NOISE");
+			//Func = (DLLFUNCTION)GetProcAddress(hInstLibrary, "PERLIN_NOISE");
+			Func = (DLLFUNCTION)GetProcAddress(hInstLibrary, "PERLIN2D");
 			setSeed = (SET_SEED)GetProcAddress(hInstLibrary, "SET_SEED");
 			if (Func && setSeed) {
 				return true;
