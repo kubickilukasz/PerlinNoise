@@ -277,14 +277,11 @@ _DATA   ENDS
 noise2d PROC
 $LN3:		
 
-		movups xmm1, xmm0; copy y x y x
-		;roundps	xmm2, xmm0, 001h
-		cvtps2dq xmm2, xmm0
-		;movq QWORD PTR xy_int, mm1
+		; y x y x
+		roundps	xmm2, xmm0, 001h
+		cvtps2dq xmm2, xmm2
 		cvtdq2ps xmm3, xmm2
-		;roundpd xmm3, xmm3, 1
-		subps xmm1, xmm3
-		;movlps QWORD PTR xy_frac, xmm1
+		subps xmm0, xmm3
 
 		movups xmm4, xmm2; copy int
 		; -> y+1 x+1 y x
@@ -301,51 +298,49 @@ $LN3:
 
 
 		; get hash
-		movups	xmm6, xmm4; copy
-		shufps	xmm6, xmm6, 10110001b; x+1 y+1 x y
-		movd	eax, xmm6 
+		pextrd	eax, xmm4, 01b
 		lea     rdx, hash				;FLAT
         movd    xmm8, DWORD PTR [rdx+rax*4] ; for y
 		
-		shufps	xmm6, xmm6, 01001110b; x y x+1 y+1
-		movd	eax, xmm6 				
+		pextrd	eax, xmm4, 11b
         movd    xmm7, DWORD PTR [rdx+rax*4] ; for y + 1
 
 		shufps	xmm7, xmm8, 00000000b ; tmp(y) tmp(y) tmp(y+1) tmp(y+1)
-		;vpunpcklqdq xmm7, xmm7, xmm8
 
-		shufps	xmm4, xmm4, 10000100b ; x+1 x x+1 x
+		shufps	xmm4, xmm4, 10001000b ; x+1 x x+1 x
 		paddd	xmm7, xmm4 ; tmp + x
 		shufps	xmm5, xmm5,	01010101b ; 255 255 255 255
 		pand	xmm7, xmm5 ; x % 256
 
 		; t s v u
 
-		movd	eax, xmm7 ; u
+		; u
+		movd	eax, xmm7 
 		movd    xmm3, DWORD PTR [rdx+rax*4]
 
-		shufps	xmm7, xmm7, 11000110b ; t u v s
-		movd	eax, xmm7 ; s
+		; s
+		pextrd	eax, xmm7, 10b
 		movd    xmm4, DWORD PTR [rdx+rax*4]
 
 		shufps	xmm3, xmm4, 00000000b ; s s u u 
 		cvtdq2ps xmm3, xmm3
 
-		shufps	xmm7, xmm7, 11100001b ; t u s v
-		movd	eax, xmm7 ; v
+		; v
+		pextrd	eax, xmm7, 01b
 		movd    xmm4, DWORD PTR [rdx+rax*4]
 
-		shufps	xmm7, xmm7, 00100111b ; v u s t
-		movd	eax, xmm7 ; t
+		;t
+		pextrd	eax, xmm7, 11b
 		movd    xmm5, DWORD PTR [rdx+rax*4]
 
 		shufps	xmm4, xmm5, 00000000b ; t t v v
 		cvtdq2ps xmm4, xmm4
 
-		movups	xmm5, xmm1; copy frac
-		movups	xmm0, xmm11
+		movups	xmm5, xmm0; copy frac
+		movups	xmm1, xmm0; copy frac
+		movups	xmm0, xmm11 ; 2 2 2 2
 		
-		mulps	xmm5, xmm0; s * 2
+		mulps	xmm5, xmm11; s * 2
 
 		mov		r14, 040400000h;
 		movq	xmm0, r14
@@ -358,15 +353,16 @@ $LN3:
 		mulps	xmm4, xmm0
 		addps	xmm3, xmm4 ; # low # high
 
-		shufps	xmm3, xmm3, 00001010b ; high high low low
-		movups	xmm2, xmm3	
-		shufps	xmm2, xmm2, 00001010b ; low low high high
+		pextrd	r14d, xmm3, 10b
+		movd	xmm2, r14d
 
-		subps	xmm3, xmm2
-		mulps	xmm3, xmm0
-		addps	xmm3, xmm2 
+		pextrd	r14d, xmm0, 11b
+		movd	xmm0, r14d
 
-		shufps	xmm3, xmm3, 00000011b ; # # # result
+		subss	xmm3, xmm2
+		mulss	xmm3, xmm0
+		addss	xmm3, xmm2
+		
 		movss	xmm0, xmm3
        
         ret     0
@@ -374,12 +370,6 @@ noise2d ENDP
 
 PERLIN2D PROC
 
-LOCAL iIndex : DWORD
-LOCAL xa : DWORD
-LOCAL ya : DWORD
-LOCAL fin : DWORD
-LOCAL amp : DWORD
-LOCAL divV : DWORD
 $LN6:
 
 		mov ecx, DWORD PTR SEED
