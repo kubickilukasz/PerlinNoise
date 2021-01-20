@@ -2,18 +2,6 @@
 
 SEED QWORD ?
 
-bytesPerPixel  DWORD ?
-levels  DWORD ?
-cellSize  DWORD ?
-persistence  DWORD ?
-
-
-__real@43800000 DD 043800000r             ; 256
-__real@437f0000 DD 0437f0000r             ; 255
-__real@40400000 DD 040400000r             ; 3
-__real@40000000 DD 040000000r             ; 2
-__real@3f800000 DD 03f800000r             ; 1
-
 hash    DD      0d0H
         DD      022H
         DD      0e7H
@@ -285,14 +273,14 @@ $LN3:
 
 		movups xmm4, xmm2; copy int
 		; -> y+1 x+1 y x
-		mov r14, 1
-		movq xmm5, r14
+		mov rax, 1
+		movq xmm5, rax
 		shufps xmm5, xmm5, 00001010b ; 1 1 0 0
 		paddd xmm4, xmm5
 		; -> y+1+seed x+1 y+seed x
 		paddd xmm4, xmm15 ; add seed 
-		mov r14, 0FFFFFFFF000000FFh;
-		movq xmm5, r14
+		mov rax, 0FFFFFFFF000000FFh;
+		movq xmm5, rax
 		shufps xmm5, xmm5, 00010001b ; 255 x 255 x
 		pand xmm4, xmm5 ; % 256
 
@@ -300,12 +288,12 @@ $LN3:
 		; get hash
 		pextrd	eax, xmm4, 01b
 		lea     rdx, hash				;FLAT
-        movd    xmm8, DWORD PTR [rdx+rax*4] ; for y
+        movd    xmm2, DWORD PTR [rdx+rax*4] ; for y
 		
 		pextrd	eax, xmm4, 11b
         movd    xmm7, DWORD PTR [rdx+rax*4] ; for y + 1
 
-		shufps	xmm7, xmm8, 00000000b ; tmp(y) tmp(y) tmp(y+1) tmp(y+1)
+		shufps	xmm7, xmm2, 00000000b ; tmp(y) tmp(y) tmp(y+1) tmp(y+1)
 
 		shufps	xmm4, xmm4, 10001000b ; x+1 x x+1 x
 		paddd	xmm7, xmm4 ; tmp + x
@@ -342,8 +330,8 @@ $LN3:
 		
 		mulps	xmm5, xmm11; s * 2
 
-		mov		r14, 040400000h;
-		movq	xmm0, r14
+		mov		rax, 040400000h;
+		movq	xmm0, rax
 		shufps	xmm0, xmm0, 00000000b ; 3 3 3 3
 		subps	xmm0, xmm5; 3 - s * 2
 		mulps	xmm0, xmm1; (3 - s * 2) * s
@@ -353,11 +341,11 @@ $LN3:
 		mulps	xmm4, xmm0
 		addps	xmm3, xmm4 ; # low # high
 
-		pextrd	r14d, xmm3, 10b
-		movd	xmm2, r14d
+		pextrd	eax, xmm3, 10b
+		movd	xmm2, eax
 
-		pextrd	r14d, xmm0, 11b
-		movd	xmm0, r14d
+		pextrd	eax, xmm0, 11b
+		movd	xmm0, eax
 
 		subss	xmm3, xmm2
 		mulss	xmm3, xmm0
@@ -372,22 +360,18 @@ PERLIN2D PROC
 
 $LN6:
 
-		mov ecx, DWORD PTR SEED
-		movd xmm15, rcx
-		shufps xmm15, xmm15, 00100010b ; for y
-
 		mov rax, 00111111100000000000000000000000b ; 1
 		movd xmm14, eax ; amp
 		mov rax, 0
 		movd xmm13, eax ; fin
 		movd xmm12, eax ; divV
 
-		mulss   xmm0, xmm2 ;xa
+		mulss   xmm0, xmm8 ;xa
 		movss	xmm10, xmm0
         
 		;movss	DWORD PTR xa, xmm0
 
-		mulss   xmm1, xmm2 ;ya
+		mulss   xmm1, xmm8 ;ya
 		movss	xmm11, xmm1
 
 		shufps xmm10, xmm11, 00000000b ; y y x x
@@ -399,8 +383,8 @@ $LN6:
 		movd	xmm11, eax
 		shufps	xmm11, xmm11, 00000000b ; 2 2 2 2
         
-		mov		r8d, 3
-		movss	xmm9, xmm3 ;persistence
+		;mov		r8d, 3
+		;movss	xmm9, xmm3 ;persistence
 
 		mov		r9d, 0 ; iIndex
         jmp     SHORT $LN4@perlin2d
@@ -408,7 +392,7 @@ $LN2@perlin2d:
         inc      r9d
 $LN4@perlin2d:
 
-		cmp		r9d, r8d
+		cmp		r9d, r13d
         jge     $LN3@perlin2d
 
         call    noise2d
@@ -435,83 +419,71 @@ perlin2d ENDP
 
 PERLIN_NOISE PROC
 
-LOCAL dataPointer : QWORD 
-LOCAL cOffset : DWORD
-LOCAL widthPic : DWORD
-LOCAL heightPic : DWORD
-LOCAL jIndex : DWORD
-LOCAL widthPixel : DWORD
-LOCAL heightPixel : DWORD
-
 $LN9:
 
 		mov		r15, rcx
-		mov		eax, DWORD PTR [rdx + 12]
-		mov		DWORD PTR cOffset, eax
-		mov		eax, DWORD PTR [rdx]
-		mov		DWORD PTR widthPic, eax 
-		mov		eax, DWORD PTR [rdx + 4]
-		add		eax, DWORD PTR cOffset
-		mov		DWORD PTR heightPic, eax 
-		mov		eax, DWORD PTR [rdx + 8]
-		mov		DWORD PTR bytesPerPixel, eax
-		mov		eax, DWORD PTR [rdx + 16]
-		mov		DWORD PTR levels, eax
-		
-		;mov		DWORD PTR cellSize, ecx
 
 		mov		rax, 00111111100000000000000000000000b ; 1
-        movq	xmm2, rax
+        movq	xmm8, rax
 		movd    xmm1, DWORD PTR [r8]
-		
-		subss   xmm2, xmm1
-		movd	DWORD PTR cellSize, xmm2
-
+		subss   xmm8, xmm1 ; freq
 
 		mov		eax, DWORD PTR [r8 + 4]
-		mov		DWORD PTR persistence, eax
-		mov		eax, 0
-		mov		DWORD PTR widthPixel, eax
-		mov		DWORD PTR heightPixel, eax
+		movd	xmm9, eax; persistence
+
+
+		mov		eax, DWORD PTR [rdx + 12]
+		mov		r10d, eax ; cOffset
+
+		mov		eax, DWORD PTR [rdx]
+		mov		r11d, eax ; widthPic
+
+		mov		r8d, DWORD PTR [rdx + 4]
+		add		r8d, r10d ;heightPic		
+
+		mov		eax, DWORD PTR [rdx + 8]
+		mov		r12d, eax ;bytesPerPixel
+
+		mov		eax, DWORD PTR [rdx + 16]
+		mov		r13d, eax ; levels
+
+		mov ecx, DWORD PTR SEED
+		movd xmm15, rcx
+		shufps xmm15, xmm15, 00100010b ; for y
+
         jmp     SHORT $LN4@PERLIN_NOI
 $LN2@PERLIN_NOI:
-        mov     eax, DWORD PTR cOffset
-        inc     eax
-        mov		DWORD PTR cOffset, eax
-		imul    eax, DWORD PTR widthPic
-        imul    eax, DWORD PTR bytesPerPixel
-		mov		DWORD PTR widthPixel, eax
+        inc		r10d; cOffset
 $LN4@PERLIN_NOI:
-		mov		eax,  DWORD PTR heightPic
-		cmp		DWORD PTR cOffset, eax
+
+		cmp		r10d, r8d
         jge     $LN3@PERLIN_NOI
-        mov     DWORD PTR jIndex, 0
+		mov		r14d, 0
         jmp     SHORT $LN7@PERLIN_NOI
 $LN5@PERLIN_NOI:
-		inc DWORD PTR jIndex
+		inc		r14d
 $LN7@PERLIN_NOI:
-		mov		eax,  DWORD PTR widthPic
-		cmp		DWORD PTR jIndex, eax
+
+		cmp			r14d, r11d
         jge     $LN2@PERLIN_NOI
-		movd xmm2, DWORD PTR cellSize
-        cvtsi2ss xmm1, DWORD PTR cOffset
-        cvtsi2ss xmm0, DWORD PTR jIndex
+
+        cvtsi2ss xmm1, r10d ; cOffset
+        cvtsi2ss xmm0, r14d ;DWORD PTR jIndex
         call    PERLIN2D
 		mov		rax, 01000011011111110000000000000000b ; 255
 		movq	xmm1, rax
         mulss		xmm0, xmm1 ; * 255
-        cvttss2si eax, xmm0 ; convert to int
-        mov		R8d, eax
-        ;mov     eax, DWORD PTR cOffset
-		mov     eax, DWORD PTR widthPixel
-        ;imul    eax, DWORD PTR widthPic
-        ;imul    eax, DWORD PTR bytesPerPixel
-        mov     ecx, DWORD PTR jIndex
-        imul    ecx, DWORD PTR bytesPerPixel
+        cvttss2si rbx, xmm0 ; convert to int
+        mov     eax, r10d;DWORD PTR cOffset
+
+        imul    eax, r11d;DWORD PTR widthPic
+        imul    eax, r12d;DWORD PTR bytesPerPixel
+        mov     ecx, r14d ; jIndex
+        imul    ecx, r12d ; bytesPerPixel
         add     eax, ecx
-        mov     BYTE PTR [r15 + rax], R8b
-        mov     BYTE PTR [r15 + rax + 1], R8b
-        mov     BYTE PTR [r15 + rax + 2], R8b
+        mov     BYTE PTR [r15 + rax], bl
+        mov     BYTE PTR [r15 + rax + 1], bl
+        mov     BYTE PTR [r15 + rax + 2], bl
         jmp     $LN5@PERLIN_NOI
 $LN3@PERLIN_NOI:
         xor     eax, eax
@@ -520,8 +492,6 @@ PERLIN_NOISE ENDP
 
 SET_SEED PROC
         mov     DWORD PTR SEED, ecx
-		;movd	xmm15, ecx
-		;shufps	xmm15, xmm15, 00100010b ; seed 0 seed 0
         ret     0
 SET_SEED ENDP
 

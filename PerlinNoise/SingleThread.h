@@ -31,7 +31,7 @@ public:
 
 	void ThreadFunction(Object ^ object) {
 
-		/*int param[]{
+		int param[]{
 					inData->width
 					,partHeight
 					,BYTES_PER_PIXEL
@@ -44,9 +44,9 @@ public:
 			,inData->persistence
 		};
 
-		Func(data, param, fParam);*/
+		Func(data, param, fParam);
 
-		height = partHeight + offset;
+		/*height = partHeight + offset;
 		width = inData->width;
 
 		for (i = offset; i < height; i++) {
@@ -56,7 +56,7 @@ public:
 				data[i * inData->width * BYTES_PER_PIXEL + j * BYTES_PER_PIXEL + 1] = value;
 				data[i * inData->width * BYTES_PER_PIXEL + j * BYTES_PER_PIXEL + 2] = value;
 			}
-		}
+		}*/
 
 	}
 

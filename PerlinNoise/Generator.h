@@ -30,7 +30,7 @@ public ref class Generator{
 	bool GetLibFunction() {
 		if (hInstLibrary) {
 			//Func = (DLLFUNCTION)GetProcAddress(hInstLibrary, "PERLIN_NOISE");
-			Func = (DLLFUNCTION)GetProcAddress(hInstLibrary, "PERLIN2D");
+			Func = (DLLFUNCTION)GetProcAddress(hInstLibrary, "PERLIN_NOISE");
 			setSeed = (SET_SEED)GetProcAddress(hInstLibrary, "SET_SEED");
 			if (Func && setSeed) {
 				return true;

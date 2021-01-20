@@ -4,8 +4,8 @@
 
 using namespace System::Threading;
 
-//typedef INT(CALLBACK* DLLFUNCTION)(unsigned char*, int*, float*);
-typedef float(CALLBACK* DLLFUNCTION)(float x, float y, float freq, float persistence, int depth);
+typedef INT(CALLBACK* DLLFUNCTION)(unsigned char*, int*, float*);
+//typedef float(CALLBACK* DLLFUNCTION)(float x, float y, float freq, float persistence, int depth);
 typedef VOID(CALLBACK* SET_SEED)(int);
 
 public ref struct InputData {

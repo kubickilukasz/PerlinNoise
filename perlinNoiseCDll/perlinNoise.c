@@ -72,7 +72,7 @@ float PERLIN2D(float x, float y, float freq, float persistence, int depth)
 	return fin / div;
 }
 
-/*
+
 unsigned PERLIN_NOISE(unsigned char * data, int * param, float * fParam) {
 
 	int offset = param[3];
@@ -87,7 +87,7 @@ unsigned PERLIN_NOISE(unsigned char * data, int * param, float * fParam) {
 	int i, j;
 	for (int i = offset; i < height; i++) {
 		for (int j = 0; j < width; j++) {
-			unsigned char value = (unsigned char)(PERLIN2D(j, i, 1 - cellSize, levels, persistence) * 255);
+			unsigned char value = (unsigned char)(PERLIN2D(j, i, 1 - cellSize, persistence, levels) * 255);
 			data[i * width * bytesPerPixel + j * bytesPerPixel] = value;
 			data[i * width * bytesPerPixel + j * bytesPerPixel + 1] = value;
 			data[i * width * bytesPerPixel + j * bytesPerPixel + 2] = value;
@@ -95,7 +95,7 @@ unsigned PERLIN_NOISE(unsigned char * data, int * param, float * fParam) {
 	}
 
 	return 0;
-}*/
+}
 
 /*
  movss   xmm1, DWORD PTR xV
